@@ -17,19 +17,21 @@ export default function books_list(app: Express) {
         }), (req, res) => {
             let filters = req.query['filters'];
 
+            let books = Object.keys(book_list).map((id) => book_list[id]);
+
             // If there are no filters we can return the list directly
             if (!filters || filters.length === 0) {
-                res.json(book_list.map((book, index) => { return { ...book, id: index}}));
+                res.json(books);
                 return;
             }
 
             // We can use a record to prevent duplication - so if the same book is valid from multiple sources
             // it'll only exist once in the record.
             // We set the value to "true" because it makes checking it later when returning the result easy.
-            let filtered: Record<number, true> = {};
+            let filtered: Record<string, true> = {};
 
             for (let { from, to } of filters) {
-                for (let [index, { price }] of book_list.entries()) {
+                for (let { id, price } of books) {
                     let matches = true;
                     if (from && price < from) {
                         matches = false;
@@ -38,11 +40,11 @@ export default function books_list(app: Express) {
                         matches = false;
                     }
                     if (matches) {
-                        filtered[index] = true;
+                        filtered[id] = true;
                     }
                 }
             }
 
-            res.json(book_list.map((book, index) => { return { ...book, id: index}}).filter((book, index) => filtered[index] === true));
+            res.json(Object.keys(filtered).map((id) => book_list[id]));
         });
 }

@@ -2,6 +2,7 @@ import { type Express } from "express";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
 import book_list from "./books_list";
+import { v4 as uuidv4} from "uuid";
 
 export default function create_or_update_book(app: Express) {
     app.post("/books",
@@ -9,7 +10,7 @@ export default function create_or_update_book(app: Express) {
         // it will reject the request.
         validateRequest({
             body: z.object({
-                id: z.number().optional(),
+                id: z.string().optional(),
                 name: z.string(),
                 price: z.number(),
                 description: z.string(),
@@ -18,18 +19,20 @@ export default function create_or_update_book(app: Express) {
             })
         }), (req, res) => {
             let body = req.body;
+            console.error("CREATING OR UPDATING", body);
 
-            if (typeof body.id === "number" && body.id >= 0) {
-                if (body.id > book_list.length) {
+            if (typeof body.id === "string") {
+                let id = body.id;
+                if (!book_list[id]) {
                     res.statusCode = 404;
                     res.json({ error: "no such book" });
                     return;
                 }
-                book_list[body.id] = body;
+                book_list[id] = { ...body, id};
                 res.json( { id: body.id});
             } else {
-                book_list.push(body);
-                let id = book_list.length;
+                let id = uuidv4();
+                book_list[id] = { ...body, id };
                 res.json({ id });
             }
         });

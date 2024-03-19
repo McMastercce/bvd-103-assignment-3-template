@@ -12,14 +12,13 @@ export default function delete_book(app: Express) {
                 id: z.string()
             })
         }), (req, res) => {
-            let id = Number.parseInt(req.params.id);
-
+            let id = req.params.id;
             if (!book_list[id]) {
                 res.statusCode = 404;
                 res.json({ error: "no such book" });
                 return;
             }
-            book_list.splice(id, 1);
+            delete book_list[id];
             res.json({});
             return;
         });
