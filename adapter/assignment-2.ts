@@ -1,8 +1,8 @@
 import assignment1 from "./assignment-1";
 
-type BookID = string;
+export type BookID = string;
 
-interface Book {
+export interface Book {
     id?: BookID,
     name: string,
     author: string,
@@ -21,7 +21,7 @@ async function createOrUpdateBook(book: Book): Promise<BookID> {
     } });
 
     if (result.ok) {
-        let res = await result.json();
+        let res = await result.json() as { id: BookID };
         return res.id;
     } else {
         throw new Error("Failed to create or update book");

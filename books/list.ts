@@ -1,7 +1,8 @@
 import { type Express } from "express";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
-import book_list from "./books_list";
+import { book_collection } from "../database_access";
+import { type Book } from "../adapter/assignment-2";
 
 export default function books_list(app: Express) {
     app.get("/books",
@@ -14,37 +15,39 @@ export default function books_list(app: Express) {
                     to: z.number().optional()
                 }).array().optional()
             })
-        }), (req, res) => {
-            let filters = req.query['filters'];
+        }), async (req, res) => {
+            let filters = req.query['filters'] || [];
 
-            let books = Object.keys(book_list).map((id) => book_list[id]);
-
-            // If there are no filters we can return the list directly
-            if (!filters || filters.length === 0) {
-                res.json(books);
-                return;
-            }
-
-            // We can use a record to prevent duplication - so if the same book is valid from multiple sources
-            // it'll only exist once in the record.
-            // We set the value to "true" because it makes checking it later when returning the result easy.
-            let filtered: Record<string, true> = {};
-
-            for (let { from, to } of filters) {
-                for (let { id, price } of books) {
-                    let matches = true;
-                    if (from && price < from) {
-                        matches = false;
+            const query = {
+                $or: filters.map(({from, to}) => {
+                    const filter : { $gte?: number, $lte?: number }= {};
+                    let valid = false;
+                    if (from) {
+                        valid = true;
+                        filter.$gte = from;
                     }
-                    if (to && price > to) {
-                        matches = false;
+                    if (to) {
+                        valid = true;
+                        filter.$lte = to;
                     }
-                    if (matches) {
-                        filtered[id] = true;
-                    }
-                }
-            }
-
-            res.json(Object.keys(filtered).map((id) => book_list[id]));
+                    return valid ? filter : false;
+                }).filter(value => value !== false).map((filter) => {
+                    return { price: filter as {$gtr?: number, $lte?: number }}
+                })
+            };
+            
+            const book_list = await book_collection.find(query.$or.length > 0 ? query : {}).map(document => {
+                let book : Book = {
+                    id: document._id.toHexString(),
+                    name: document.name,
+                    image: document.image,
+                    price: document.price,
+                    author: document.author,
+                    description: document.description
+                };
+                return book;
+            }).toArray();
+            res.json(book_list);
+            return;
         });
 }

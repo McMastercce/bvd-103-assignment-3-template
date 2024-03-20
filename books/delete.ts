@@ -1,7 +1,8 @@
 import { type Express } from "express";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
-import book_list from "./books_list";
+import { ObjectId } from "mongodb";
+import { book_collection } from "../database_access";
 
 export default function delete_book(app: Express) {
     app.delete("/books/:id",
@@ -11,15 +12,15 @@ export default function delete_book(app: Express) {
             params: z.object({
                 id: z.string()
             })
-        }), (req, res) => {
+        }), async (req, res) => {
             let id = req.params.id;
-            if (!book_list[id]) {
+            let objectId = ObjectId.createFromHexString(id);
+            const result = await book_collection.deleteOne({_id: {$eq: objectId}});
+            if (result.deletedCount == 1) {
+                res.json({});
+            } else {
                 res.statusCode = 404;
-                res.json({ error: "no such book" });
-                return;
             }
-            delete book_list[id];
-            res.json({});
             return;
         });
 }
