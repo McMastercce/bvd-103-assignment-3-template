@@ -1,6 +1,6 @@
 import { type Express } from "express";
 import { z } from "zod";
-import { validateRequest } from "zod-express-middleware";
+import { processRequest } from "zod-express-middleware";
 import { book_collection } from "../database_access";
 import { ObjectId } from "mongodb";
 
@@ -8,18 +8,17 @@ export default function create_or_update_book(app: Express) {
     app.post("/books",
         // We are using zod and zod-express-middleware to validate that our query string is correct, and if not
         // it will reject the request.
-        validateRequest({
+        processRequest({
             body: z.object({
                 id: z.string().optional(),
                 name: z.string(),
-                price: z.number(),
+                price: z.coerce.number(),
                 description: z.string(),
                 author: z.string(),
                 image: z.string(),
             })
         }), async (req, res) => {
             let body = req.body;
-            console.error("CREATING OR UPDATING", body);
 
             if (typeof body.id === "string") {
                 let id = body.id;

@@ -1,5 +1,4 @@
 import express from "express";
-import queryType from "query-types";
 import cors from "cors";
 import books_list from "./books/list";
 import create_or_update_book from "./books/create_or_update";
@@ -9,8 +8,6 @@ const app = express();
 
 // Setting up to use express JSON for the body
 app.use(express.json());
-// We use the queryType middleware to ensure our query strings are fully parsed.
-app.use(queryType.middleware())
 // And we add cors to ensure we can access our API from the mcmasterful-books website
 app.use(cors());
 

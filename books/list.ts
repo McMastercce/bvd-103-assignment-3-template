@@ -1,6 +1,6 @@
 import { type Express } from "express";
 import { z } from "zod";
-import { validateRequest } from "zod-express-middleware";
+import { processRequest } from "zod-express-middleware";
 import { book_collection } from "../database_access";
 import { type Book } from "../adapter/assignment-2";
 
@@ -8,11 +8,11 @@ export default function books_list(app: Express) {
     app.get("/books",
         // We are using zod and zod-express-middleware to validate that our query string is correct, and if not
         // it will reject the request.
-        validateRequest({
+        processRequest({
             query: z.object({
                 filters: z.object({
-                    from: z.number().optional(),
-                    to: z.number().optional()
+                    from: z.coerce.number().optional(),
+                    to: z.coerce.number().optional()
                 }).array().optional()
             })
         }), async (req, res) => {

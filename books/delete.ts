@@ -1,6 +1,6 @@
 import { type Express } from "express";
 import { z } from "zod";
-import { validateRequest } from "zod-express-middleware";
+import { processRequest } from "zod-express-middleware";
 import { ObjectId } from "mongodb";
 import { book_collection } from "../database_access";
 
@@ -8,7 +8,7 @@ export default function delete_book(app: Express) {
     app.delete("/books/:id",
         // We are using zod and zod-express-middleware to validate that our query string is correct, and if not
         // it will reject the request.
-        validateRequest({
+        processRequest({
             params: z.object({
                 id: z.string()
             })
