@@ -4,7 +4,7 @@
   "description": "This is a template repository for the first assignment in BVD 103 at McMaster Continuing Education.",
   "main": "index.ts",
   "scripts": {
-    "start-server": "tsx ./index.ts"
+    "start-server": "tsx ./src/index.ts"
   },
   "keywords": [],
   "author": "",

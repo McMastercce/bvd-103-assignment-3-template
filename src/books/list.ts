@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { book_collection } from "../database_access";
-import { type Book } from "../adapter/assignment-2";
+import { type Book } from "../../adapter/assignment-2";
 import { ZodRouter } from "koa-zod-router";
 
 export default function books_list(router: ZodRouter) {
